@@ -1,0 +1,406 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight, TrendingUp, Zap, Trophy, Star, ArrowRight, Timer, Flame } from 'lucide-react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import LiveMatchCard from '../components/LiveMatchCard';
+
+const liveMatches = [
+  { id: 1, league: 'الدوري الإنجليزي', team1: 'ليفربول', team2: 'مانشستر سيتي', score1: 2, score2: 1, time: "67'", odds1: 1.85, oddsDraw: 3.40, odds2: 4.20, flag1: '🔴', flag2: '🔵', isLive: true, sport: '⚽' },
+  { id: 2, league: 'الدوري الإسباني', team1: 'ريال مدريد', team2: 'برشلونة', score1: 1, score2: 1, time: "45'+2", odds1: 2.10, oddsDraw: 3.25, odds2: 3.50, flag1: '⚪', flag2: '🔵🔴', isLive: true, sport: '⚽' },
+  { id: 3, league: 'دوري أبطال أوروبا', team1: 'بايرن ميونخ', team2: 'باريس سان جيرمان', score1: 3, score2: 2, time: "78'", odds1: 1.55, oddsDraw: 4.50, odds2: 5.80, flag1: '🔴⚪', flag2: '🔵🔴', isLive: true, sport: '⚽' },
+  { id: 4, league: 'الدوري الإيطالي', team1: 'يوفنتوس', team2: 'إنتر ميلان', score1: 0, score2: 0, time: "23'", odds1: 2.60, oddsDraw: 3.10, odds2: 2.80, flag1: '⚪⚫', flag2: '🔵⚫', isLive: true, sport: '⚽' },
+  { id: 5, league: 'NBA', team1: 'ليكرز', team2: 'سيلتكس', score1: 87, score2: 92, time: 'Q3 5:42', odds1: 2.15, oddsDraw: 0, odds2: 1.75, flag1: '💜💛', flag2: '☘️', isLive: true, sport: '🏀' },
+  { id: 6, league: 'الدوري الألماني', team1: 'دورتموند', team2: 'لايبزيغ', score1: 1, score2: 0, time: "55'", odds1: 1.90, oddsDraw: 3.60, odds2: 4.10, flag1: '💛⚫', flag2: '🔴⚪', isLive: true, sport: '⚽' },
+];
+
+const upcomingMatches = [
+  { id: 7, league: 'كأس العالم', team1: 'البرازيل', team2: 'الأرجنتين', score1: 0, score2: 0, time: 'اليوم 21:00', odds1: 2.30, oddsDraw: 3.20, odds2: 3.10, flag1: '🇧🇷', flag2: '🇦🇷', isLive: false, sport: '⚽' },
+  { id: 8, league: 'الدوري الفرنسي', team1: 'مارسيليا', team2: 'ليون', score1: 0, score2: 0, time: 'غداً 19:00', odds1: 2.45, oddsDraw: 3.30, odds2: 2.90, flag1: '🔵⚪', flag2: '🔴🔵', isLive: false, sport: '⚽' },
+];
+
+const sports = [
+  { name: 'كرة القدم', emoji: '⚽', count: 1247, active: true },
+  { name: 'كرة السلة', emoji: '🏀', count: 342 },
+  { name: 'التنس', emoji: '🎾', count: 198 },
+  { name: 'الكريكيت', emoji: '🏏', count: 156 },
+  { name: 'الهوكي', emoji: '🏒', count: 89 },
+  { name: 'البيسبول', emoji: '⚾', count: 124 },
+  { name: 'الكرة الطائرة', emoji: '🏐', count: 67 },
+  { name: 'MMA', emoji: '🥊', count: 45 },
+  { name: 'رياضات إلكترونية', emoji: '🎮', count: 234 },
+  { name: 'سباق الخيل', emoji: '🏇', count: 78 },
+];
+
+const promotions = [
+  {
+    title: 'مكافأة الترحيب',
+    subtitle: 'أول إيداع',
+    bonus: '100%',
+    maxBonus: 'حتى $500',
+    color: 'from-[#00d4ff] to-[#0051ff]',
+    icon: '🎁',
+  },
+  {
+    title: 'رهان مجاني',
+    subtitle: 'كل أسبوع',
+    bonus: '$50',
+    maxBonus: 'رهان مجاني أسبوعي',
+    color: 'from-[#ff6b35] to-[#ff3366]',
+    icon: '🎯',
+  },
+  {
+    title: 'كاش باك',
+    subtitle: 'على الخسائر',
+    bonus: '15%',
+    maxBonus: 'استرداد أسبوعي',
+    color: 'from-[#7c3aed] to-[#a855f7]',
+    icon: '💰',
+  },
+  {
+    title: 'VIP حصري',
+    subtitle: 'مكافآت خاصة',
+    bonus: 'VIP',
+    maxBonus: 'عروض مخصصة لك',
+    color: 'from-[#f59e0b] to-[#ef4444]',
+    icon: '👑',
+  },
+];
+
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<'live' | 'upcoming'>('live');
+  const [counter, setCounter] = useState(23847);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCounter((prev) => prev + Math.floor(Math.random() * 3));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#0f0f23] text-white font-['Inter']" dir="rtl">
+      <Header />
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f23] via-[#1a1a3e] to-[#0f0f23]"></div>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#00d4ff]/10 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#0051ff]/10 rounded-full blur-[120px]"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#7c3aed]/5 rounded-full blur-[150px]"></div>
+          {/* Grid pattern */}
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#00d4ff]/10 to-[#0051ff]/10 border border-[#00d4ff]/20 mb-8">
+              <Flame size={14} className="text-[#ff6b35]" />
+              <span className="text-[#00d4ff] text-sm font-medium">الموقع الرياضي #1 في العالم العربي</span>
+              <Flame size={14} className="text-[#ff6b35]" />
+            </div>
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent">
+                راهن على
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-[#00d4ff] via-[#0088ff] to-[#0051ff] bg-clip-text text-transparent">
+                شغفك الرياضي
+              </span>
+            </h1>
+
+            <p className="text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+              أفضل الاحتمالات على أكثر من 50 رياضة مع بث مباشر وأسرع عمليات سحب.
+              انضم لأكثر من مليون لاعب حول العالم.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+              <a
+                href="https://1xbet.com/ar/registration"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-lg bg-gradient-to-r from-[#00d4ff] to-[#0051ff] hover:from-[#00b8d9] hover:to-[#0040cc] text-white shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 relative overflow-hidden"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-[#ff6b35] to-[#ff3366] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                <span className="relative flex items-center gap-2">
+                  🚀 سجّل الآن واحصل على $500
+                  <ArrowRight size={20} className="group-hover:-translate-x-1 transition-transform" />
+                </span>
+              </a>
+              <Link
+                to="/login"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-lg bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>🔑</span> تسجيل الدخول
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+              {[
+                { value: counter.toLocaleString(), label: 'لاعب نشط الآن', icon: '👥' },
+                { value: '50+', label: 'رياضة متاحة', icon: '🏆' },
+                { value: '1,500+', label: 'مباراة يومياً', icon: '⚡' },
+                { value: '$2M+', label: 'أرباح يومية', icon: '💎' },
+              ].map((stat) => (
+                <div key={stat.label} className="p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                  <span className="text-xl mb-1 block">{stat.icon}</span>
+                  <p className="text-2xl md:text-3xl font-black text-white mb-1">{stat.value}</p>
+                  <p className="text-gray-500 text-xs">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sports Categories Ticker */}
+      <section className="border-y border-[#16213e] bg-[#1a1a2e]/50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1">
+            {sports.map((sport) => (
+              <button
+                key={sport.name}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                  sport.active
+                    ? 'bg-gradient-to-r from-[#00d4ff]/20 to-[#0051ff]/20 text-[#00d4ff] border border-[#00d4ff]/30'
+                    : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-transparent'
+                }`}
+              >
+                <span className="text-lg">{sport.emoji}</span>
+                {sport.name}
+                <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${sport.active ? 'bg-[#00d4ff]/20 text-[#00d4ff]' : 'bg-white/10 text-gray-500'}`}>
+                  {sport.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Promotions Section */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {promotions.map((promo) => (
+            <a
+              key={promo.title}
+              href="https://1xbet.com/ar/registration"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative rounded-2xl overflow-hidden group cursor-pointer hover:scale-[1.02] transition-all duration-300 block"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${promo.color} opacity-90`}></div>
+              <div className="absolute inset-0 bg-black/20"></div>
+              <div className="relative p-6">
+                <span className="text-3xl mb-3 block">{promo.icon}</span>
+                <p className="text-white/70 text-xs font-medium uppercase tracking-wider mb-1">{promo.subtitle}</p>
+                <h3 className="text-white font-black text-2xl mb-1">{promo.title}</h3>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-white font-black text-4xl">{promo.bonus}</span>
+                </div>
+                <p className="text-white/80 text-sm">{promo.maxBonus}</p>
+                <div className="mt-4 flex items-center gap-1 text-white/90 text-sm font-semibold group-hover:gap-2 transition-all">
+                  <span>سجّل واحصل عليها الآن</span>
+                  <ChevronRight size={16} className="group-hover:translate-x-[-4px] transition-transform" />
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Live Matches Section */}
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/25">
+                <Zap size={20} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-white">المباريات</h2>
+                <p className="text-gray-500 text-sm">تابع أحدث المباريات</p>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex items-center bg-white/5 rounded-xl p-1 mr-4">
+              <button
+                onClick={() => setActiveTab('live')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === 'live'
+                    ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <Timer size={14} />
+                  مباشر ({liveMatches.length})
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('upcoming')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  activeTab === 'upcoming'
+                    ? 'bg-[#00d4ff] text-white shadow-lg shadow-blue-500/25'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                قادمة ({upcomingMatches.length})
+              </button>
+            </div>
+          </div>
+
+          <button className="hidden md:flex items-center gap-1 text-[#00d4ff] text-sm font-semibold hover:gap-2 transition-all">
+            عرض الكل
+            <ChevronRight size={16} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(activeTab === 'live' ? liveMatches : upcomingMatches).map((match) => (
+            <LiveMatchCard key={match.id} match={match} />
+          ))}
+        </div>
+      </section>
+
+      {/* Popular Bets / Trending */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#ef4444] flex items-center justify-center shadow-lg shadow-orange-500/25">
+            <TrendingUp size={20} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-white">الأكثر رواجاً</h2>
+            <p className="text-gray-500 text-sm">الرهانات الأكثر شعبية اليوم</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[
+            { match: 'ليفربول vs مانشستر سيتي', bet: 'ليفربول يفوز', odds: 1.85, percentage: 67, trend: 'up' },
+            { match: 'ريال مدريد vs برشلونة', bet: 'أكثر من 2.5 أهداف', odds: 1.72, percentage: 73, trend: 'up' },
+            { match: 'بايرن ميونخ vs PSG', bet: 'كلا الفريقين يسجل', odds: 1.55, percentage: 81, trend: 'up' },
+            { match: 'يوفنتوس vs إنتر', bet: 'تعادل', odds: 3.10, percentage: 45, trend: 'down' },
+            { match: 'ليكرز vs سيلتكس', bet: 'سيلتكس يفوز', odds: 1.75, percentage: 58, trend: 'up' },
+            { match: 'دورتموند vs لايبزيغ', bet: 'دورتموند يفوز', odds: 1.90, percentage: 62, trend: 'up' },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-4 rounded-xl bg-[#1a1a2e] border border-white/5 hover:border-[#00d4ff]/20 transition-all group cursor-pointer"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-gray-500">
+                  #{index + 1}
+                </div>
+                <div>
+                  <p className="text-gray-400 text-xs mb-0.5">{item.match}</p>
+                  <p className="text-white font-semibold text-sm">{item.bet}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#0051ff]"
+                      style={{ width: `${item.percentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-gray-500 text-xs">{item.percentage}%</span>
+                </div>
+                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00d4ff]/10 to-[#0051ff]/10 border border-[#00d4ff]/20 hover:border-[#00d4ff]/50 transition-all">
+                  <span className="text-[#00d4ff] font-bold text-sm">{item.odds.toFixed(2)}</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-4">لماذا <span className="text-[#00d4ff]">1xBet</span>؟</h2>
+          <p className="text-gray-400 max-w-xl mx-auto">نقدم لك تجربة مراهنات لا مثيل لها مع أفضل الميزات والخدمات</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              icon: '⚡',
+              title: 'سحب فوري',
+              desc: 'احصل على أرباحك في أقل من 15 دقيقة مع أكثر من 100 طريقة دفع متاحة',
+              gradient: 'from-yellow-500/10 to-orange-500/10',
+              border: 'border-yellow-500/20',
+            },
+            {
+              icon: '📺',
+              title: 'بث مباشر مجاني',
+              desc: 'شاهد أكثر من 100,000 حدث رياضي مباشر سنوياً بجودة عالية ومجاناً',
+              gradient: 'from-blue-500/10 to-cyan-500/10',
+              border: 'border-blue-500/20',
+            },
+            {
+              icon: '🏆',
+              title: 'أفضل الاحتمالات',
+              desc: 'نقدم أعلى معدلات الاحتمالات في السوق مع هامش ربح منخفض جداً',
+              gradient: 'from-purple-500/10 to-pink-500/10',
+              border: 'border-purple-500/20',
+            },
+          ].map((feature) => (
+            <div
+              key={feature.title}
+              className={`p-8 rounded-2xl bg-gradient-to-br ${feature.gradient} border ${feature.border} hover:scale-[1.02] transition-all duration-300 cursor-pointer`}
+            >
+              <span className="text-4xl mb-4 block">{feature.icon}</span>
+              <h3 className="text-white font-bold text-xl mb-3">{feature.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Banner */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="relative rounded-3xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#00d4ff] to-[#0051ff]"></div>
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)',
+            backgroundSize: '30px 30px'
+          }}></div>
+          <div className="relative px-8 py-14 md:py-16 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 mb-6">
+              <Star size={14} className="text-yellow-300" />
+              <span className="text-white text-sm font-medium">عرض محدود - سجل الآن!</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
+              احصل على مكافأة <span className="text-yellow-300">100%</span>
+            </h2>
+            <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto">
+              سجل الآن واحصل على مكافأة ترحيبية تصل إلى $500 على أول إيداع لك
+            </p>
+            <a
+              href="https://1xbet.com/ar/registration"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl font-bold text-lg bg-white text-[#0051ff] hover:bg-yellow-300 hover:text-[#0040cc] shadow-2xl shadow-black/20 transition-all duration-300 hover:scale-105 group"
+            >
+              <Trophy size={22} className="group-hover:animate-bounce" />
+              🚀 سجل في 1xBet واحصل على المكافأة
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
